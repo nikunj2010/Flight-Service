@@ -89,4 +89,18 @@ public class FlightController {
 
         return ResponseEntity.ok(res);
     }
+    
+    @PutMapping
+    public ResponseEntity<ResponsePayload<Flight>> updateFlight(@RequestBody Flight flight){
+    	
+    	Flight updatedFlight = flightService.updateFlight(flight);
+    	
+    	 ResponsePayload<Flight> res = new ResponsePayload<>(
+    	            "SUCCESS",
+    	            "Flight deleted successfully",
+    	            updatedFlight
+    	        );
+
+    	        return ResponseEntity.ok(res);
+    }
 }

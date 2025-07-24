@@ -1,18 +1,19 @@
 package com.cdac.acts.flightService.service;
 
-import java.time.LocalDate;
+
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.cdac.acts.flightService.entity.Flight;
 import com.cdac.acts.flightService.exceptions.CreateFlightException;
 import com.cdac.acts.flightService.exceptions.DeleteFlightException;
 import com.cdac.acts.flightService.exceptions.FlightNotFoundException;
 import com.cdac.acts.flightService.repository.FlightRepository;
+
 
 @Service
 public class FlightServiceImpl implements FlightService{
@@ -68,9 +69,13 @@ public class FlightServiceImpl implements FlightService{
 	}
 
 	@Override
+	@Transactional
 	public void deleteFlight(String flightNumber) {
 		// TODO Auto-generated method stub
-		if(flightRepository.bookingExistsByFlightNumber(flightNumber) == 1) {
+		if(!flightRepository.existsByFlightNumber(flightNumber)) {
+			throw new FlightNotFoundException("Flight with number " + flightNumber + " not found");
+		}
+		else if(flightRepository.bookingExistsByFlightNumber(flightNumber) == 1) {
 			throw new DeleteFlightException("Cannot delete flight " + flightNumber + " as bookings exists");
 		}
 		try {
@@ -83,9 +88,24 @@ public class FlightServiceImpl implements FlightService{
 	}
 
 	@Override
+	@Transactional
 	public Flight updateFlight(Flight flight) {
-		// TODO Auto-generated method stub
-		return null;
+		Flight existingFlight = flightRepository.findById(flight.getId())
+	            .orElseThrow(() -> new FlightNotFoundException("Flight with ID " + flight.getId() + " not found"));
+
+	    existingFlight.setFlightNumber(flight.getFlightNumber());
+	    existingFlight.setAirplaneId(flight.getAirplaneId());
+	    existingFlight.setDepartureAirportId(flight.getDepartureAirportId());
+	    existingFlight.setArrivalAirportId(flight.getArrivalAirportId());
+	    existingFlight.setDepartureTime(flight.getDepartureTime());
+	    existingFlight.setArrivalTime(flight.getArrivalTime());
+	    existingFlight.setPrice(flight.getPrice());
+	    existingFlight.setBoardingGate(flight.getBoardingGate());
+	    existingFlight.setTotalSeats(flight.getTotalSeats());
+	    existingFlight.setAvailableSeats(flight.getAvailableSeats());
+	    existingFlight.setUpdatedAt(LocalDateTime.now());
+
+	    return flightRepository.save(existingFlight);		
 	}
 
 
