@@ -9,22 +9,24 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import com.cdac.acts.flightService.DTO.FlightDetailsDTO;
 import com.cdac.acts.flightService.entity.Flight;
 import com.cdac.acts.flightService.responseWrapper.ResponsePayload;
 import com.cdac.acts.flightService.service.FlightServiceImpl;
 
 @RestController
 @RequestMapping("/flights")
+@CrossOrigin(origins = "http://localhost:5173")
 public class FlightController {
 
     @Autowired
-    FlightServiceImpl flightService;
+    private FlightServiceImpl flightService;
 
     @GetMapping
-    public ResponseEntity<ResponsePayload<List<Flight>>> getAllFlights() {
-        List<Flight> flights = flightService.getAllFlights();
+    public ResponseEntity<ResponsePayload<List<FlightDetailsDTO>>> getAllFlights() {
+        List<FlightDetailsDTO> flights = flightService.getAllFlights();
 
-        ResponsePayload<List<Flight>> res = new ResponsePayload<>(
+        ResponsePayload<List<FlightDetailsDTO>> res = new ResponsePayload<>(
             "SUCCESS",
             "Flights fetched successfully",
             flights
@@ -33,29 +35,28 @@ public class FlightController {
         return ResponseEntity.ok(res);
     }
 
-    @GetMapping("/{id}")
-    public ResponseEntity<ResponsePayload<Flight>> getFlightById(@PathVariable Long id) {
-        Flight flight = flightService.getFlightsById(id);
-
-        ResponsePayload<Flight> res = new ResponsePayload<>(
+    @GetMapping("/{flightNumber}")
+    public ResponseEntity<ResponsePayload<List<FlightDetailsDTO>>> getFlightById(@PathVariable String flightNumber) {
+        List<FlightDetailsDTO> flights = flightService.getFlightsByFlightNumber(flightNumber);
+        ResponsePayload<List<FlightDetailsDTO>> res = new ResponsePayload<>(
             "SUCCESS",
             "Flight fetched successfully",
-            flight
+            flights
         );
 
         return ResponseEntity.ok(res);
     }
 
     @GetMapping("/search")
-    public ResponseEntity<ResponsePayload<List<Flight>>> getFlightForOneWay(
+    public ResponseEntity<ResponsePayload<List<FlightDetailsDTO>>> getFlightByFilter(
         @RequestParam Long departureId,
         @RequestParam Long arrivalId,
         @RequestParam @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss") LocalDateTime departureDate,
         @RequestParam int passengers
     ) {
-        List<Flight> flights = flightService.getFlightByOneWayFilter(departureId, arrivalId, departureDate, passengers);
+        List<FlightDetailsDTO> flights = flightService.getFlightByOneWayFilter(departureId, arrivalId, departureDate, passengers);
 
-        ResponsePayload<List<Flight>> res = new ResponsePayload<>(
+        ResponsePayload<List<FlightDetailsDTO>> res = new ResponsePayload<>(
             "SUCCESS",
             "Matching flights retrieved successfully",
             flights
@@ -77,6 +78,19 @@ public class FlightController {
         return new ResponseEntity<>(res, HttpStatus.CREATED);
     }
 
+    @PutMapping
+    public ResponseEntity<ResponsePayload<Flight>> updateFlight(@RequestBody Flight flight) {
+        Flight updatedFlight = flightService.updateFlight(flight);
+
+        ResponsePayload<Flight> res = new ResponsePayload<>(
+            "SUCCESS",
+            "Flight updated successfully",
+            updatedFlight
+        );
+
+        return ResponseEntity.ok(res);
+    }
+
     @DeleteMapping
     public ResponseEntity<ResponsePayload<String>> deleteFlight(@RequestParam String flightNumber) {
         flightService.deleteFlight(flightNumber);
@@ -88,19 +102,5 @@ public class FlightController {
         );
 
         return ResponseEntity.ok(res);
-    }
-    
-    @PutMapping
-    public ResponseEntity<ResponsePayload<Flight>> updateFlight(@RequestBody Flight flight){
-    	
-    	Flight updatedFlight = flightService.updateFlight(flight);
-    	
-    	 ResponsePayload<Flight> res = new ResponsePayload<>(
-    	            "SUCCESS",
-    	            "Flight deleted successfully",
-    	            updatedFlight
-    	        );
-
-    	        return ResponseEntity.ok(res);
     }
 }

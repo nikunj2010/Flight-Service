@@ -1,112 +1,165 @@
 package com.cdac.acts.flightService.service;
 
-
+import java.sql.Timestamp;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.cdac.acts.flightService.DTO.FlightDetailsDTO;
 import com.cdac.acts.flightService.entity.Flight;
 import com.cdac.acts.flightService.exceptions.CreateFlightException;
 import com.cdac.acts.flightService.exceptions.DeleteFlightException;
 import com.cdac.acts.flightService.exceptions.FlightNotFoundException;
 import com.cdac.acts.flightService.repository.FlightRepository;
 
-
 @Service
-public class FlightServiceImpl implements FlightService{
+public class FlightServiceImpl implements FlightService {
 
-	@Autowired
-	FlightRepository flightRepository;
-	
-	@Override
-	public List<Flight> getAllFlights() {
-		// TODO Auto-generated method stub
-		
-		List<Flight> flights = flightRepository.findAll();
-		
-		return flights;
-	}
+    @Autowired
+    FlightRepository flightRepository;
 
-	@Override
-	public Flight getFlightsById(Long id){
-		// TODO Auto-generated method stub
-		
-		 return flightRepository.findById(id)
-			        .orElseThrow(() -> new FlightNotFoundException("Flight with ID " + id + " not found"));
+    @Override
+    public List<FlightDetailsDTO> getAllFlights() {
+        List<Object[]> rows = flightRepository.getRawFlightDetails();
+        List<FlightDetailsDTO> dtoList = new ArrayList<>();
 
-	}
-	
-	@Override
-	public List<Flight> getFlightByOneWayFilter(Long departureAirportId, Long arrivalAirportId, LocalDateTime date, int passengers) {
-		
-		return flightRepository.findFlightsForOneWay(departureAirportId, arrivalAirportId, date, passengers)
-		        .orElseThrow(() -> new FlightNotFoundException("Flight with not found"));
-	}
-	
-	@Override
-	public List<Flight> getFlightByRoundTripFilter(int departureAirportId, int arrivalAirportId,
-			LocalDateTime departureDate, LocalDateTime arrivalDate, int passengers) {
-		// TODO Auto-generated method stub
-		return null;
-	}
+        for (Object[] row : rows) {
+            FlightDetailsDTO dto = new FlightDetailsDTO();
+            
+            dto.setId(((Number) row[0]).longValue());
+            dto.setFlightNumber((String) row[1]);
+            dto.setAirplaneId(((Number) row[2]).longValue());
+            dto.setDepartureAirportName((String) row[3]);
+            dto.setArrivalAirportName((String) row[4]);
+            dto.setDepartureTime(((Timestamp) row[5]).toLocalDateTime());
+            dto.setArrivalTime(((Timestamp) row[6]).toLocalDateTime());
+            dto.setPrice(((Number) row[7]).intValue());
+            dto.setBoardingGate((String) row[8]);
+            dto.setTotalSeats(((Number) row[9]).intValue());
+            dto.setAvailableSeats(((Number) row[10]).intValue());
+            dto.setCreatedAt(((Timestamp) row[11]).toLocalDateTime());
+            dto.setUpdatedAt(((Timestamp) row[12]).toLocalDateTime());
 
-	@Override
-	public Flight createFlight(Flight flight) {
-		// TODO Auto-generated method stub
-		if(flightRepository.existsByFlightNumber(flight.getFlightNumber())){
-			throw new CreateFlightException("Flight with flight number - " +flight.getFlightNumber() +" already exists");
-		}
-		try {
-			flightRepository.saveAndFlush(flight);
-			return flight;
-		}
-		catch(CreateFlightException e) {
-			throw e;
-		}
-	}
+            dtoList.add(dto);
+        }
 
-	@Override
-	@Transactional
-	public void deleteFlight(String flightNumber) {
-		// TODO Auto-generated method stub
-		if(!flightRepository.existsByFlightNumber(flightNumber)) {
-			throw new FlightNotFoundException("Flight with number " + flightNumber + " not found");
-		}
-		else if(flightRepository.bookingExistsByFlightNumber(flightNumber) == 1) {
-			throw new DeleteFlightException("Cannot delete flight " + flightNumber + " as bookings exists");
-		}
-		try {
-			flightRepository.deleteByFlightNumber(flightNumber);
-		}
-		catch(DeleteFlightException e) {
-			throw e;
-		}
-		
-	}
+        return dtoList;
+    }
 
-	@Override
-	@Transactional
-	public Flight updateFlight(Flight flight) {
-		Flight existingFlight = flightRepository.findById(flight.getId())
-	            .orElseThrow(() -> new FlightNotFoundException("Flight with ID " + flight.getId() + " not found"));
+    @Override
+    public List<FlightDetailsDTO> getFlightsByFlightNumber(String flightNumber) {
+    	
+    	List<Object[]> rows = flightRepository.getRawFlightDetailsByFlightNumber(flightNumber + "%");
+        List<FlightDetailsDTO> dtoList = new ArrayList<>();
+        for (Object[] row : rows) {
+            FlightDetailsDTO dto = new FlightDetailsDTO();
+            
+            dto.setId(((Number) row[0]).longValue());
+            dto.setFlightNumber((String) row[1]);
+            dto.setAirplaneId(((Number) row[2]).longValue());
+            dto.setDepartureAirportName((String) row[3]);
+            dto.setArrivalAirportName((String) row[4]);
+            dto.setDepartureTime(((Timestamp) row[5]).toLocalDateTime());
+            dto.setArrivalTime(((Timestamp) row[6]).toLocalDateTime());
+            dto.setPrice(((Number) row[7]).intValue());
+            dto.setBoardingGate((String) row[8]);
+            dto.setTotalSeats(((Number) row[9]).intValue());
+            dto.setAvailableSeats(((Number) row[10]).intValue());
+            dto.setCreatedAt(((Timestamp) row[11]).toLocalDateTime());
+            dto.setUpdatedAt(((Timestamp) row[12]).toLocalDateTime());
 
-	    existingFlight.setFlightNumber(flight.getFlightNumber());
-	    existingFlight.setAirplaneId(flight.getAirplaneId());
-	    existingFlight.setDepartureAirportId(flight.getDepartureAirportId());
-	    existingFlight.setArrivalAirportId(flight.getArrivalAirportId());
-	    existingFlight.setDepartureTime(flight.getDepartureTime());
-	    existingFlight.setArrivalTime(flight.getArrivalTime());
-	    existingFlight.setPrice(flight.getPrice());
-	    existingFlight.setBoardingGate(flight.getBoardingGate());
-	    existingFlight.setTotalSeats(flight.getTotalSeats());
-	    existingFlight.setAvailableSeats(flight.getAvailableSeats());
-	    existingFlight.setUpdatedAt(LocalDateTime.now());
+            dtoList.add(dto);
+        }
+        System.out.println(dtoList.size());
+        return dtoList;
+    }
 
-	    return flightRepository.save(existingFlight);		
-	}
+    
+    @Override
+    public List<FlightDetailsDTO> getFlightByOneWayFilter(Long departureAirportId, Long arrivalAirportId, LocalDateTime date, int passengers) {
+        List<Object[]> flights =  flightRepository.findFlightsForOneWay(departureAirportId, arrivalAirportId, date, passengers)
+                .orElseThrow(() -> new FlightNotFoundException("No flights found"));
+        if(flights.size() == 0) {
+        	throw new FlightNotFoundException("No flights found");
+        }
+        List<FlightDetailsDTO> dtoList = new ArrayList<>();
 
+        System.out.println(flights.get(0).length);
+        for (Object[] row : flights) {
+            FlightDetailsDTO dto = new FlightDetailsDTO();
+            
+            dto.setId(((Number) row[0]).longValue());
+            dto.setFlightNumber((String) row[1]);
+            dto.setAirplaneId(((Number) row[2]).longValue());
+            dto.setDepartureAirportName((String) row[3]);
+            dto.setArrivalAirportName((String) row[4]);
+            dto.setDepartureTime(((Timestamp) row[5]).toLocalDateTime());
+            dto.setArrivalTime(((Timestamp) row[6]).toLocalDateTime());
+            dto.setPrice(((Number) row[7]).intValue());
+            dto.setBoardingGate((String) row[8]);
+            dto.setTotalSeats(((Number) row[9]).intValue());
+            dto.setAvailableSeats(((Number) row[10]).intValue());
+            dto.setCreatedAt(((Timestamp) row[11]).toLocalDateTime());
+            dto.setUpdatedAt(((Timestamp) row[12]).toLocalDateTime());
 
+            dtoList.add(dto);
+        }
+
+        return dtoList;
+    }
+
+    @Override
+    public Flight createFlight(Flight flight) {
+        if (flightRepository.existsByFlightNumber(flight.getFlightNumber())) {
+            throw new CreateFlightException("Flight with flight number - " + flight.getFlightNumber() + " already exists");
+        }
+
+        try {
+            return flightRepository.saveAndFlush(flight);
+        } catch (Exception e) {
+            throw new CreateFlightException("Failed to create flight: " + e.getMessage());
+        }
+    }
+
+    @Override
+    @Transactional
+    public void deleteFlight(String flightNumber) {
+        if (!flightRepository.existsByFlightNumber(flightNumber)) {
+            throw new FlightNotFoundException("Flight with number " + flightNumber + " not found");
+        } else if (flightRepository.bookingExistsByFlightNumber(flightNumber) == 1) {
+            throw new DeleteFlightException("Cannot delete flight " + flightNumber + " as bookings exist");
+        }
+
+        try {
+            flightRepository.deleteByFlightNumber(flightNumber);
+        } catch (Exception e) {
+            throw new DeleteFlightException("Failed to delete flight: " + e.getMessage());
+        }
+    }
+
+    @Override
+    @Transactional
+    public Flight updateFlight(Flight flight) {
+        Flight existingFlight = flightRepository.findById(flight.getId())
+                .orElseThrow(() -> new FlightNotFoundException("Flight with ID " + flight.getId() + " not found"));
+
+        existingFlight.setFlightNumber(flight.getFlightNumber());
+        existingFlight.setAirplaneId(flight.getAirplaneId());
+        existingFlight.setDepartureAirportId(flight.getDepartureAirportId());
+        existingFlight.setArrivalAirportId(flight.getArrivalAirportId());
+        existingFlight.setDepartureTime(flight.getDepartureTime());
+        existingFlight.setArrivalTime(flight.getArrivalTime());
+        existingFlight.setPrice(flight.getPrice());
+        existingFlight.setBoardingGate(flight.getBoardingGate());
+        existingFlight.setTotalSeats(flight.getTotalSeats());
+        existingFlight.setAvailableSeats(flight.getAvailableSeats());
+        existingFlight.setUpdatedAt(LocalDateTime.now());
+
+        return flightRepository.save(existingFlight);
+    }
 }
