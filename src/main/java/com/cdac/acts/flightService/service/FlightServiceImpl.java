@@ -11,6 +11,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.cdac.acts.flightService.DTO.FlightDetailsDTO;
+import com.cdac.acts.flightService.entity.Airport;
 import com.cdac.acts.flightService.entity.Flight;
 import com.cdac.acts.flightService.exceptions.CreateFlightException;
 import com.cdac.acts.flightService.exceptions.DeleteFlightException;
@@ -23,60 +24,22 @@ public class FlightServiceImpl implements FlightService {
     @Autowired
     FlightRepository flightRepository;
 
+
     @Override
-    public List<FlightDetailsDTO> getAllFlights() {
-        List<Object[]> rows = flightRepository.getRawFlightDetails();
-        List<FlightDetailsDTO> dtoList = new ArrayList<>();
-
-        for (Object[] row : rows) {
-            FlightDetailsDTO dto = new FlightDetailsDTO();
-            
-            dto.setId(((Number) row[0]).longValue());
-            dto.setFlightNumber((String) row[1]);
-            dto.setAirplaneId(((Number) row[2]).longValue());
-            dto.setDepartureAirportName((String) row[3]);
-            dto.setArrivalAirportName((String) row[4]);
-            dto.setDepartureTime(((Timestamp) row[5]).toLocalDateTime());
-            dto.setArrivalTime(((Timestamp) row[6]).toLocalDateTime());
-            dto.setPrice(((Number) row[7]).intValue());
-            dto.setBoardingGate((String) row[8]);
-            dto.setTotalSeats(((Number) row[9]).intValue());
-            dto.setAvailableSeats(((Number) row[10]).intValue());
-            dto.setCreatedAt(((Timestamp) row[11]).toLocalDateTime());
-            dto.setUpdatedAt(((Timestamp) row[12]).toLocalDateTime());
-
-            dtoList.add(dto);
-        }
-
-        return dtoList;
+    public List<Flight> getAllFlights() {
+        
+    	return flightRepository.findAll();
     }
 
     @Override
-    public List<FlightDetailsDTO> getFlightsByFlightNumber(String flightNumber) {
+    public List<Flight> getFlightsByFlightNumber(String flightNumber) {
     	
-    	List<Object[]> rows = flightRepository.getRawFlightDetailsByFlightNumber(flightNumber + "%");
-        List<FlightDetailsDTO> dtoList = new ArrayList<>();
-        for (Object[] row : rows) {
-            FlightDetailsDTO dto = new FlightDetailsDTO();
-            
-            dto.setId(((Number) row[0]).longValue());
-            dto.setFlightNumber((String) row[1]);
-            dto.setAirplaneId(((Number) row[2]).longValue());
-            dto.setDepartureAirportName((String) row[3]);
-            dto.setArrivalAirportName((String) row[4]);
-            dto.setDepartureTime(((Timestamp) row[5]).toLocalDateTime());
-            dto.setArrivalTime(((Timestamp) row[6]).toLocalDateTime());
-            dto.setPrice(((Number) row[7]).intValue());
-            dto.setBoardingGate((String) row[8]);
-            dto.setTotalSeats(((Number) row[9]).intValue());
-            dto.setAvailableSeats(((Number) row[10]).intValue());
-            dto.setCreatedAt(((Timestamp) row[11]).toLocalDateTime());
-            dto.setUpdatedAt(((Timestamp) row[12]).toLocalDateTime());
-
-            dtoList.add(dto);
-        }
-        System.out.println(dtoList.size());
-        return dtoList;
+    	List<Flight> flights = flightRepository.getFlightByFlightNumber(flightNumber + "%");
+    	if(flights.size() == 0) {
+    		throw new FlightNotFoundException("flight with flight number " + flightNumber + " not found");
+    	}
+    	return flights;
+    	
     }
 
     
@@ -142,24 +105,23 @@ public class FlightServiceImpl implements FlightService {
         }
     }
 
-    @Override
-    @Transactional
-    public Flight updateFlight(Flight flight) {
-        Flight existingFlight = flightRepository.findById(flight.getId())
-                .orElseThrow(() -> new FlightNotFoundException("Flight with ID " + flight.getId() + " not found"));
+	@Override
+	@Transactional
+	public Flight updateFlight(Flight flight) {
+		
+		Flight existingFlight = flightRepository.findById(flight.getId())
+              .orElseThrow(() -> new FlightNotFoundException("Flight with ID " + flight.getId() + " not found"));
+      
+		Flight updatedFlight = flightRepository.save(flight);
+		return flight;
+	}
 
-        existingFlight.setFlightNumber(flight.getFlightNumber());
-        existingFlight.setAirplaneId(flight.getAirplaneId());
-        existingFlight.setDepartureAirportId(flight.getDepartureAirportId());
-        existingFlight.setArrivalAirportId(flight.getArrivalAirportId());
-        existingFlight.setDepartureTime(flight.getDepartureTime());
-        existingFlight.setArrivalTime(flight.getArrivalTime());
-        existingFlight.setPrice(flight.getPrice());
-        existingFlight.setBoardingGate(flight.getBoardingGate());
-        existingFlight.setTotalSeats(flight.getTotalSeats());
-        existingFlight.setAvailableSeats(flight.getAvailableSeats());
-        existingFlight.setUpdatedAt(LocalDateTime.now());
+	@Override
+	public List<Airport> getAllAirports() {
+		return flightRepository.getAllAirports();
+	}
 
-        return flightRepository.save(existingFlight);
-    }
+	
+
+    
 }

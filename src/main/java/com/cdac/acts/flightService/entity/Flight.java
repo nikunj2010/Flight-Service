@@ -2,19 +2,15 @@ package com.cdac.acts.flightService.entity;
 
 import java.time.LocalDateTime;
 
-
-
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import lombok.Data;
-import lombok.Getter;
-import lombok.NonNull;
-import lombok.RequiredArgsConstructor;
-import lombok.Setter;
 
 @Data
 @Entity
@@ -31,11 +27,13 @@ public class Flight {
 	    @Column(name = "airplaneId", nullable = false)
 	    private Long airplaneId;
 
-	    @Column(name = "departureAirportId", nullable = false)
-	    private Long departureAirportId;
+	    @ManyToOne
+	    @JoinColumn(name = "departureAirportId")
+	    private Airport departureAirport;
 
-	    @Column(name = "arrivalAirportId", nullable = false)
-	    private Long arrivalAirportId;
+	    @ManyToOne
+	    @JoinColumn(name = "arrivalAirportId")
+	    private Airport arrivalAirport;
 
 	    @Column(name = "departureTime", nullable = false)
 	    private LocalDateTime departureTime;

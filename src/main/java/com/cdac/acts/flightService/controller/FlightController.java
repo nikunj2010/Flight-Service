@@ -10,23 +10,26 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import com.cdac.acts.flightService.DTO.FlightDetailsDTO;
+import com.cdac.acts.flightService.entity.Airport;
 import com.cdac.acts.flightService.entity.Flight;
 import com.cdac.acts.flightService.responseWrapper.ResponsePayload;
 import com.cdac.acts.flightService.service.FlightServiceImpl;
 
 @RestController
 @RequestMapping("/flights")
-@CrossOrigin(origins = "http://localhost:5173")
+@CrossOrigin(origins = "*")
+
+
 public class FlightController {
 
     @Autowired
     private FlightServiceImpl flightService;
 
     @GetMapping
-    public ResponseEntity<ResponsePayload<List<FlightDetailsDTO>>> getAllFlights() {
-        List<FlightDetailsDTO> flights = flightService.getAllFlights();
+    public ResponseEntity<ResponsePayload<List<Flight>>> getAllFlights() {
+        List<Flight> flights = flightService.getAllFlights();
 
-        ResponsePayload<List<FlightDetailsDTO>> res = new ResponsePayload<>(
+        ResponsePayload<List<Flight>> res = new ResponsePayload<>(
             "SUCCESS",
             "Flights fetched successfully",
             flights
@@ -36,9 +39,9 @@ public class FlightController {
     }
 
     @GetMapping("/{flightNumber}")
-    public ResponseEntity<ResponsePayload<List<FlightDetailsDTO>>> getFlightById(@PathVariable String flightNumber) {
-        List<FlightDetailsDTO> flights = flightService.getFlightsByFlightNumber(flightNumber);
-        ResponsePayload<List<FlightDetailsDTO>> res = new ResponsePayload<>(
+    public ResponseEntity<ResponsePayload<List<Flight>>> getFlightById(@PathVariable String flightNumber) {
+        List<Flight> flights = flightService.getFlightsByFlightNumber(flightNumber);
+        ResponsePayload<List<Flight>> res = new ResponsePayload<>(
             "SUCCESS",
             "Flight fetched successfully",
             flights
@@ -81,7 +84,7 @@ public class FlightController {
     @PutMapping
     public ResponseEntity<ResponsePayload<Flight>> updateFlight(@RequestBody Flight flight) {
         Flight updatedFlight = flightService.updateFlight(flight);
-
+        System.out.println("update called!!!");
         ResponsePayload<Flight> res = new ResponsePayload<>(
             "SUCCESS",
             "Flight updated successfully",
@@ -102,5 +105,18 @@ public class FlightController {
         );
 
         return ResponseEntity.ok(res);
+    }
+    
+    @GetMapping("/airports")
+    public ResponseEntity<ResponsePayload<List<Airport>>> getAllAirports(){
+    	List<Airport> airports = flightService.getAllAirports();
+    	
+    	ResponsePayload<List<Airport>> res = new ResponsePayload<>(
+                "SUCCESS",
+                "Airports fetched successfully",
+                airports
+            );
+
+            return ResponseEntity.ok(res);
     }
 }

@@ -1,17 +1,17 @@
 package com.cdac.acts.flightService.service;
 
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 
 import com.cdac.acts.flightService.DTO.FlightDetailsDTO;
+import com.cdac.acts.flightService.entity.Airport;
 import com.cdac.acts.flightService.entity.Flight;
 
 public interface FlightService {
 
-	List<FlightDetailsDTO> getAllFlights();
+	List<Flight> getAllFlights();
 	
-	List<FlightDetailsDTO> getFlightsByFlightNumber(String FlightNumber);
+	List<Flight> getFlightsByFlightNumber(String FlightNumber);
 	
 	Flight createFlight(Flight flight);
 	
@@ -21,4 +21,5 @@ public interface FlightService {
 	
 	List<FlightDetailsDTO> getFlightByOneWayFilter(Long departureAirportId, Long arrivalAirportId, LocalDateTime date, int passengers);
 	
+	List<Airport> getAllAirports();
 }

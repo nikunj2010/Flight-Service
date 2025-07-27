@@ -3,6 +3,8 @@ package com.cdac.acts.flightService.entity;
 import java.time.LocalDateTime;
 import java.util.List;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -37,10 +39,12 @@ public class Airport {
 
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
-//    
-//    @OneToMany(mappedBy = "departureAirport")
-//    private List<Flight> departingFlights;
-//
-//    @OneToMany(mappedBy = "arrivalAirport")
-//    private List<Flight> arrivingFlights;
+    
+    @OneToMany(mappedBy = "departureAirport")
+    @JsonIgnore
+    private List<Flight> departingFlights;
+
+    @OneToMany(mappedBy = "arrivalAirport")
+    @JsonIgnore
+    private List<Flight> arrivingFlights;
 }
