@@ -10,11 +10,17 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
-import lombok.Data;
+import lombok.Getter;
+import lombok.RequiredArgsConstructor;
+import lombok.Setter;
+import lombok.ToString;
 
-@Data
+@Getter
+@Setter
+@RequiredArgsConstructor
 @Entity
 @Table(name = "flights")
+@ToString(exclude = {"departureAirport", "arrivalAirport"})
 public class Flight {
 
 	 	@Id
@@ -58,4 +64,7 @@ public class Flight {
 	    
 	    @Column(name = "availableSeats")
 	    int availableSeats;
+	    
+	    @Column(name = "isCancelled")
+	    private boolean isCancelled;
 }

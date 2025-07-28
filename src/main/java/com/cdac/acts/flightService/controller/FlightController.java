@@ -1,6 +1,7 @@
 package com.cdac.acts.flightService.controller;
 
 import java.time.LocalDateTime;
+
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -9,7 +10,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import com.cdac.acts.flightService.DTO.FlightDetailsDTO;
 import com.cdac.acts.flightService.entity.Airport;
 import com.cdac.acts.flightService.entity.Flight;
 import com.cdac.acts.flightService.responseWrapper.ResponsePayload;
@@ -51,15 +51,15 @@ public class FlightController {
     }
 
     @GetMapping("/search")
-    public ResponseEntity<ResponsePayload<List<FlightDetailsDTO>>> getFlightByFilter(
+    public ResponseEntity<ResponsePayload<List<Flight>>> getFlightByFilter(
         @RequestParam Long departureId,
         @RequestParam Long arrivalId,
         @RequestParam @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss") LocalDateTime departureDate,
         @RequestParam int passengers
     ) {
-        List<FlightDetailsDTO> flights = flightService.getFlightByOneWayFilter(departureId, arrivalId, departureDate, passengers);
+        List<Flight> flights = flightService.getFlightByOneWayFilter(departureId, arrivalId, departureDate, passengers);
 
-        ResponsePayload<List<FlightDetailsDTO>> res = new ResponsePayload<>(
+        ResponsePayload<List<Flight>> res = new ResponsePayload<>(
             "SUCCESS",
             "Matching flights retrieved successfully",
             flights
