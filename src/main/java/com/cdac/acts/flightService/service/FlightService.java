@@ -15,7 +15,7 @@ public interface FlightService {
 	
 	Flight createFlight(Flight flight);
 	
-	void deleteFlight(String flightNumber);
+	boolean deleteFlight(Long flightId);
 	
 	Flight updateFlight(Flight flight);
 	

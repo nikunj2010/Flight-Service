@@ -2,6 +2,8 @@ package com.cdac.acts.flightService;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.context.annotation.Bean;
+import org.springframework.web.client.RestTemplate;
 
 @SpringBootApplication
 
@@ -11,4 +13,8 @@ public class FlightServiceApplication {
 		SpringApplication.run(FlightServiceApplication.class, args);
 	}
 
+	@Bean
+	public RestTemplate restTemplate() {
+		return new RestTemplate();
+	}
 }

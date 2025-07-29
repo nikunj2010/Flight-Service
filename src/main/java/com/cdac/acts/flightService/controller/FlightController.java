@@ -15,10 +15,11 @@ import com.cdac.acts.flightService.entity.Flight;
 import com.cdac.acts.flightService.responseWrapper.ResponsePayload;
 import com.cdac.acts.flightService.service.FlightServiceImpl;
 
+import jakarta.transaction.Transactional;
+
 @RestController
 @RequestMapping("/flights")
 @CrossOrigin(origins = "*")
-
 
 public class FlightController {
 
@@ -94,14 +95,16 @@ public class FlightController {
         return ResponseEntity.ok(res);
     }
 
+    @Transactional
     @DeleteMapping
-    public ResponseEntity<ResponsePayload<String>> deleteFlight(@RequestParam String flightNumber) {
-        flightService.deleteFlight(flightNumber);
+    public ResponseEntity<ResponsePayload<Long>> deleteFlight(@RequestParam Long flightId) {
+    	System.out.println("id in controller = " + flightId);
+        flightService.deleteFlight(flightId);
 
-        ResponsePayload<String> res = new ResponsePayload<>(
+        ResponsePayload<Long> res = new ResponsePayload<>(
             "SUCCESS",
             "Flight deleted successfully",
-            flightNumber
+            flightId
         );
 
         return ResponseEntity.ok(res);

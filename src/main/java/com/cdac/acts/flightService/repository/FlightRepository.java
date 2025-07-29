@@ -41,21 +41,13 @@ public interface FlightRepository extends JpaRepository<Flight, Long>{
 	// Check if a flight with the given flight number exists
 	boolean existsByFlightNumberAndIsCancelledFalse(String flightNumber);
 
-	// Check if bookings exist for a given flightNumber
-	@Query(
-			value = "SELECT EXISTS (SELECT 1 FROM bookings "
-					+ "WHERE "
-					+ "flightId = (SELECT id FROM flights WHERE flightNumber = :flightNumber)"
-					+ "AND status = 'CONFIRMED')",
-			nativeQuery = true
-			)
-	Long bookingExistsByFlightNumber(@Param("flightNumber") String flightNumber);
 
-	// Delete flight by flight number
+	//Delete flight by id
 	@Modifying
-	@Query(value = "update flights set isCancelled = true where flightnumber = :flightNumber ", nativeQuery = true)
-	void deleteByFlightNumber(String flightNumber);
+	@Query(value = "update flights set isCancelled = true where id = :flightId ", nativeQuery = true)
+	void deleteById(Long flightId);
 
+	//Search flights by flight number
 	@Query(value = "select * from flights where flightNumber like :flightNumber ", nativeQuery = true)
 	List<Flight> getFlightByFlightNumber(@Param("flightNumber") String flightNumber);
 
