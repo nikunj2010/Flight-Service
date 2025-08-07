@@ -1,10 +1,7 @@
 package com.cdac.acts.flightService.repository;
 
-import java.time.LocalDate;
-
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.Optional;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
@@ -12,8 +9,11 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import com.cdac.acts.flightService.entity.Airplane;
 import com.cdac.acts.flightService.entity.Airport;
 import com.cdac.acts.flightService.entity.Flight;
+
+import jakarta.transaction.Transactional;
 
 @Repository
 public interface FlightRepository extends JpaRepository<Flight, Long>{
@@ -51,8 +51,21 @@ public interface FlightRepository extends JpaRepository<Flight, Long>{
 	@Query(value = "select * from flights where flightNumber like :flightNumber ", nativeQuery = true)
 	List<Flight> getFlightByFlightNumber(@Param("flightNumber") String flightNumber);
 
+
+	//Delete flight by airport id
+	@Modifying
+	@Transactional
+	@Query("UPDATE Flight f SET f.isCancelled = true WHERE f.departureAirport.id = :airportId OR f.arrivalAirport.id = :airportId")
+	int cancelFlightsByAirportId(@Param("airportId") Long airportId);
+
+	@Query("SELECT f.id FROM Flight f WHERE f.departureAirport.id = :airportId OR f.arrivalAirport.id = :airportId")
+	List<Long> findFlightIdsByAirportId(@Param("airportId") Long airportId);
+
 	//Get all airports
 	@Query(value = "select * from airports", nativeQuery = true)
 	List<Airport> getAllAirports();
 
+	//Get all airplanes
+	@Query(value = "select * from airplanes", nativeQuery = true)
+	List<Airplane> getAllAirplanes();
 }

@@ -5,11 +5,13 @@ import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpMethod;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.client.RestTemplate;
 
+import com.cdac.acts.flightService.entity.Airplane;
 import com.cdac.acts.flightService.entity.Airport;
 import com.cdac.acts.flightService.entity.Flight;
 import com.cdac.acts.flightService.exceptions.CreateFlightException;
@@ -49,9 +51,9 @@ public class FlightServiceImpl implements FlightService {
 		List<Flight> flights =  flightRepository.findFlightsForOneWay(departureAirportId, arrivalAirportId, date, passengers);
 		System.out.println("flight are");
 		flights.forEach(System.out::println);
-		if(flights.size() == 0) {
-			throw new FlightNotFoundException("No flights found");
-		}        
+//		if(flights.size() == 0) {
+//			throw new FlightNotFoundException("No flights found");
+//		}        
 
 		return flights;
 	}
@@ -76,13 +78,13 @@ public class FlightServiceImpl implements FlightService {
 		System.out.println("id in controller = " + flightId);
 		flightRepository.deleteById(flightId);
 		ResponseEntity<Boolean> response = restTemplate.exchange(
-			    bookingServiceUrl + "/" + flightId,
-			    HttpMethod.PUT,
-			    null,  // or new HttpEntity<>(requestBody)
-			    Boolean.class
-			);
+				bookingServiceUrl + "/" + flightId,
+				HttpMethod.PUT,
+				null,  // or new HttpEntity<>(requestBody)
+				Boolean.class
+				);
 
-			Boolean bookingsPresent = response.getBody();
+		Boolean bookingsPresent = response.getBody();
 
 		return bookingsPresent;
 	}
@@ -98,12 +100,42 @@ public class FlightServiceImpl implements FlightService {
 		return flight;
 	}
 
+
+	@Override
+	public boolean cancelFlightByAirportId(Long id) {
+
+		String bookingServiceUrl = "http://localhost:8081/bookings";
+		List<Long> flightIds = flightRepository.findFlightIdsByAirportId(id);
+		if(flightIds.size() != 0) {
+			ResponseEntity<Boolean> response = null;
+			for(Long flightId : flightIds){
+				response = restTemplate.exchange(
+						bookingServiceUrl + "/" + flightId,
+						HttpMethod.PUT,
+						null,
+						Boolean.class
+						);
+				System.out.println("outside if");
+				if (response.getStatusCode() == HttpStatus.OK && Boolean.TRUE.equals(response.getBody())) {
+					System.out.println("inside if");
+					flightRepository.cancelFlightsByAirportId(id);
+				}
+				else {
+					return false;
+				}
+			}
+		}
+		return true;
+	}
+	
+	
 	@Override
 	public List<Airport> getAllAirports() {
 		return flightRepository.getAllAirports();
 	}
-
-
-
-
+	
+	@Override
+	public List<Airplane> getAllAirplanes() {
+		return flightRepository.getAllAirplanes();
+	}
 }
